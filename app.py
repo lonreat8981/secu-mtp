@@ -14,83 +14,80 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
-# CSS GLOBAL (fond, carte centrale, boutons) - Amélioré pour un design intemporel
+# CSS GLOBAL (fond sombre technique, sans encart blanc) - Design cyber intemporel et technique
 # ---------------------------------------------------------
 st.markdown(
     """
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
     
     body {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        font-family: 'Inter', sans-serif;
-        color: #1e293b;
+        background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+        font-family: 'JetBrains Mono', monospace;
+        color: #00d4ff;
     }
     .main {
         background: transparent;
         padding: 20px;
     }
-    .cyber-card {
-        max-width: 1200px;
-        margin: 20px auto 10px auto;
-        padding: 32px 40px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9));
-        border: 1px solid rgba(148,163,184,0.3);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        transition: box-shadow 0.3s ease;
-    }
-    .cyber-card:hover {
-        box-shadow: 0 12px 48px rgba(0,0,0,0.15);
-    }
     .cyber-title {
         text-align: center;
-        color: #0f172a;
+        color: #00ff88;
         font-size: 32px;
-        font-weight: 700;
-        letter-spacing: 1px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px #00ff88;
         margin-bottom: 8px;
     }
     .cyber-subtitle {
         text-align: center;
-        color: #64748b;
+        color: #00d4ff;
         font-size: 14px;
         margin-bottom: 20px;
     }
     .module-label {
         text-align: center;
-        color: #374151;
+        color: #ffffff;
         font-size: 16px;
         margin-top: 12px;
         margin-bottom: 8px;
     }
     .stButton>button {
         width: 100%;
-        border-radius: 12px;
-        border: 1px solid rgba(148,163,184,0.4);
-        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-        color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #00d4ff;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #00d4ff;
         font-weight: 600;
         font-size: 14px;
         padding: 10px 0;
-        box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        box-shadow: 0 0 10px rgba(0,212,255,0.5);
         transition: all 0.2s ease;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        box-shadow: 0 6px 20px rgba(59,130,246,0.5);
+        background: linear-gradient(135deg, #16213e 0%, #0f0f23 100%);
+        box-shadow: 0 0 20px rgba(0,212,255,0.8);
         transform: translateY(-2px);
     }
     .section-title {
-        color: #0f172a;
+        color: #00ff88;
         font-size: 24px;
-        font-weight: 700;
+        font-weight: 600;
         margin-top: 16px;
+        text-shadow: 0 0 5px #00ff88;
     }
     .section-sub {
-        color: #64748b;
+        color: #00d4ff;
         font-size: 14px;
         margin-bottom: 12px;
+    }
+    .terminal-style {
+        background: rgba(0,0,0,0.8);
+        border: 1px solid #00d4ff;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        color: #00ff88;
     }
     </style>
     """,
@@ -107,51 +104,45 @@ def set_module(name: str):
     st.session_state.module = name
 
 # ---------------------------------------------------------
-# CARTE CENTRALE : LOGO + TITRE + NAV
+# HEADER : LOGO + TITRE + NAV (sans encart blanc, layout direct)
 # ---------------------------------------------------------
-with st.container():
-    st.markdown('<div class="cyber-card">', unsafe_allow_html=True)
+col_logo, col_text = st.columns([1, 2])
 
-    # Ligne logo + titre
-    col_logo, col_text = st.columns([1, 2])
+with col_logo:
+    if os.path.exists("interface_cyber.jpg"):
+        st.image("interface_cyber.jpg", use_column_width=True)
+    else:
+        st.warning("⚠️ Placez le fichier 'interface_cyber.jpg' dans le même dossier que app.py")
 
-    with col_logo:
-        if os.path.exists("interface_cyber.jpg"):
-            st.image("interface_cyber.jpg", use_column_width=True)
-        else:
-            st.warning("⚠️ Placez le fichier 'interface_cyber.jpg' dans le même dossier que app.py")
+with col_text:
+    st.markdown('<div class="cyber-title">CYBER SÉCURITÉ – DASHBOARD</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="cyber-subtitle">'
+        'Vulnérabilités • Attaques • Mots de passe • Firewall • MFA'
+        '</div>',
+        unsafe_allow_html=True
+    )
 
-    with col_text:
-        st.markdown('<div class="cyber-title">CYBER SÉCURITÉ – DASHBOARD</div>', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="cyber-subtitle">'
-            'Vulnérabilités • Attaques • Mots de passe • Firewall • MFA'
-            '</div>',
-            unsafe_allow_html=True
-        )
+    st.markdown('<div class="module-label">Choisissez un module pour continuer :</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="module-label">Choisissez un module pour continuer :</div>', unsafe_allow_html=True)
+    c1, c2, c3, c4, c5 = st.columns(5)
+    with c1:
+        if st.button("🌍 Vulnérabilités"):
+            set_module("vuln")
+    with c2:
+        if st.button("🔒 Mots de passe"):
+            set_module("pwd")
+    with c3:
+        if st.button("🛡️ Firewall"):
+            set_module("fw")
+    with c4:
+        if st.button("🏠 Attaques"):
+            set_module("attacks")
+    with c5:
+        if st.button("📝 Explications / MFA"):
+            set_module("note")
 
-        c1, c2, c3, c4, c5 = st.columns(5)
-        with c1:
-            if st.button("🌍 Vulnérabilités"):
-                set_module("vuln")
-        with c2:
-            if st.button("🔒 Mots de passe"):
-                set_module("pwd")
-        with c3:
-            if st.button("🛡️ Firewall"):
-                set_module("fw")
-        with c4:
-            if st.button("🏠 Attaques"):
-                set_module("attacks")
-        with c5:
-            if st.button("📝 Explications / MFA"):
-                set_module("note")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-st.write("")  # petit espace sous la carte
+st.write("")  # petit espace
 
 # ---------------------------------------------------------
 # DONNÉES VULN (COMMUNES) - Avec gestion d'erreurs
@@ -327,11 +318,14 @@ if st.session_state.module == "fw":
 
     st.markdown(
         """
-- Filtre le trafic entrant et sortant pour bloquer les connexions malveillantes  
-- Réduit la surface d’attaque exposée à Internet  
-- Empêche certains scans de ports et tentatives d’exploitation  
-- Complète la sécurité des mots de passe et du MFA  
-"""
+    <div class="terminal-style">
+    - Filtre le trafic entrant et sortant pour bloquer les connexions malveillantes  
+    - Réduit la surface d’attaque exposée à Internet  
+    - Empêche certains scans de ports et tentatives d’exploitation  
+    - Complète la sécurité des mots de passe et du MFA  
+    </div>
+    """,
+        unsafe_allow_html=True
     )
 
 # ---------------------------------------------------------
@@ -374,25 +368,26 @@ if st.session_state.module == "note":
 
     st.markdown(
         """
-### Risques des mots de passe faibles
-- Cassables en quelques secondes  
-- Très présents dans des dictionnaires comme rockyou.txt  
-- Souvent réutilisés sur plusieurs services  
-- Vulnérables aux attaques automatisées  
+    <div class="terminal-style">
+    ### Risques des mots de passe faibles
+    - Cassables en quelques secondes  
+    - Très présents dans des dictionnaires comme rockyou.txt  
+    - Souvent réutilisés sur plusieurs services  
+    - Vulnérables aux attaques automatisées  
 
-### Pourquoi activer le MFA
-- Protège même si le mot de passe est compromis  
-- Bloque une grande partie des attaques par phishing  
-- Ajoute une couche indépendante du mot de passe  
-- Indispensable pour les comptes sensibles (mail, banque, accès pro, etc.)  
+    ### Pourquoi activer le MFA
+    - Protège même si le mot de passe est compromis  
+    - Bloque une grande partie des attaques par phishing  
+    - Ajoute une couche indépendante du mot de passe  
+    - Indispensable pour les comptes sensibles (mail, banque, accès pro, etc.)  
 
-### Bonnes pratiques
-- Utiliser un gestionnaire de mots de passe  
-- Générer des mots de passe longs (12+ caractères) et uniques  
-- Activer le MFA partout où c’est possible  
-- Ne jamais réutiliser le même mot de passe  
-"""
+    ### Bonnes pratiques
+    - Utiliser un gestionnaire de mots de passe  
+    - Générer des mots de passe longs (12+ caractères) et uniques  
+    - Activer le MFA partout où c’est possible  
+    - Ne jamais réutiliser le même mot de passe  
+    </div>
+    """,
+        unsafe_allow_html=True
     )
-    
-
 
