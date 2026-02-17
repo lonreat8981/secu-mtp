@@ -107,6 +107,14 @@ if st.session_state.module == "home":
     st.stop()
 
 # ---------------------------------------------------------
+# BOUTON RETOUR
+# ---------------------------------------------------------
+if st.session_state.module != "home":
+    if st.button("⬅️ Retour à l'accueil"):
+        set_module("home")
+        st.stop()
+
+# ---------------------------------------------------------
 # DONNÉES VULN
 # ---------------------------------------------------------
 CSV_FILE = "vulnerabilites.csv"
@@ -315,3 +323,4 @@ if st.session_state.module == "note":
 
 
      
+
