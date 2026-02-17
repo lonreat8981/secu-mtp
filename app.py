@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import base64
 import os
 import re
 from datetime import datetime, date
-from PIL import Image
 
 # ---------------------------------------------------------
 # CONFIG GÉNÉRALE
@@ -15,68 +13,85 @@ st.set_page_config(
     layout="wide"
 )
 
-px.defaults.template = "plotly_dark"
-
 # ---------------------------------------------------------
-# CHARGEMENT DE L'IMAGE DE FOND
-# ---------------------------------------------------------
-if os.path.exists("interface_cyber.jpg"):
-    with open("interface_cyber.jpg", "rb") as img_file:
-        img_base64 = base64.b64encode(img_file.read()).decode()
-    bg_image = f"data:image/jpeg;base64,{img_base64}"
-else:
-    bg_image = "rgba(10, 15, 30, 1)"
-
-# ---------------------------------------------------------
-# CSS GLOBAL + IMAGE DE FOND
+# CSS GLOBAL (fond, carte centrale, boutons) - Amélioré pour un design intemporel
 # ---------------------------------------------------------
 st.markdown(
-    f"""
+    """
     <style>
-    .stApp {{
-        background-image: url('{bg_image}');
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-    }}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
     
-    .main {{
-        background: rgba(0, 0, 0, 0.65);
+    body {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        font-family: 'Inter', sans-serif;
+        color: #1e293b;
+    }
+    .main {
+        background: transparent;
         padding: 20px;
-        border-radius: 15px;
-    }}
-    
-    .icon-btn {{
+    }
+    .cyber-card {
+        max-width: 1200px;
+        margin: 20px auto 10px auto;
+        padding: 32px 40px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9));
+        border: 1px solid rgba(148,163,184,0.3);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        transition: box-shadow 0.3s ease;
+    }
+    .cyber-card:hover {
+        box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+    }
+    .cyber-title {
         text-align: center;
-        padding: 20px;
-        border-radius: 15px;
-        background: rgba(15, 23, 42, 0.75);
-        border: 1px solid rgba(56, 189, 248, 0.5);
-        color: #e5f4ff;
-        font-size: 18px;
+        color: #0f172a;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+    .cyber-subtitle {
+        text-align: center;
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    .module-label {
+        text-align: center;
+        color: #374151;
+        font-size: 16px;
+        margin-top: 12px;
+        margin-bottom: 8px;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(148,163,184,0.4);
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        color: #ffffff;
         font-weight: 600;
-        cursor: pointer;
-        transition: 0.2s;
-    }}
-    
-    .icon-btn:hover {{
-        background: rgba(56, 189, 248, 0.3);
-        transform: scale(1.05);
-    }}
-    
-    .section-title {{
-        color: #e5f4ff;
-        font-size: 26px;
-        font-weight: 800;
-        margin-top: 10px;
-    }}
-    
-    .section-sub {{
-        color: #cbd5e1;
-        font-size: 15px;
-        margin-bottom: 10px;
-    }}
+        font-size: 14px;
+        padding: 10px 0;
+        box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        transition: all 0.2s ease;
+    }
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        box-shadow: 0 6px 20px rgba(59,130,246,0.5);
+        transform: translateY(-2px);
+    }
+    .section-title {
+        color: #0f172a;
+        font-size: 24px;
+        font-weight: 700;
+        margin-top: 16px;
+    }
+    .section-sub {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -86,80 +101,94 @@ st.markdown(
 # STATE NAVIGATION
 # ---------------------------------------------------------
 if "module" not in st.session_state:
-    st.session_state.module = "home"
+    st.session_state.module = "vuln"  # par défaut
 
 def set_module(name: str):
     st.session_state.module = name
 
 # ---------------------------------------------------------
-# PAGE D'ACCUEIL AVEC ICÔNES INTERACTIVES
+# CARTE CENTRALE : LOGO + TITRE + NAV
 # ---------------------------------------------------------
-if st.session_state.module == "home":
+with st.container():
+    st.markdown('<div class="cyber-card">', unsafe_allow_html=True)
 
-    st.markdown("<h1 style='text-align:center;color:white;'>CYBER SÉCURITÉ – DASHBOARD</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center;color:#cbd5e1;'>Choisis un module pour continuer</p>", unsafe_allow_html=True)
+    # Ligne logo + titre
+    col_logo, col_text = st.columns([1, 2])
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+    with col_logo:
+        if os.path.exists("interface_cyber.jpg"):
+            st.image("interface_cyber.jpg", use_column_width=True)
+        else:
+            st.warning("⚠️ Placez le fichier 'interface_cyber.jpg' dans le même dossier que app.py")
 
-    with col1:
-        if st.button("🌍\nVulnérabilités"):
-            set_module("vuln")
+    with col_text:
+        st.markdown('<div class="cyber-title">CYBER SÉCURITÉ – DASHBOARD</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="cyber-subtitle">'
+            'Vulnérabilités • Attaques • Mots de passe • Firewall • MFA'
+            '</div>',
+            unsafe_allow_html=True
+        )
 
-    with col2:
-        if st.button("🔒\nMots de passe"):
-            set_module("pwd")
+        st.markdown('<div class="module-label">Choisissez un module pour continuer :</div>', unsafe_allow_html=True)
 
-    with col3:
-        if st.button("🛡️\nFirewall"):
-            set_module("fw")
+        c1, c2, c3, c4, c5 = st.columns(5)
+        with c1:
+            if st.button("🌍 Vulnérabilités"):
+                set_module("vuln")
+        with c2:
+            if st.button("🔒 Mots de passe"):
+                set_module("pwd")
+        with c3:
+            if st.button("🛡️ Firewall"):
+                set_module("fw")
+        with c4:
+            if st.button("🏠 Attaques"):
+                set_module("attacks")
+        with c5:
+            if st.button("📝 Explications / MFA"):
+                set_module("note")
 
-    with col4:
-        if st.button("🏠\nAttaques"):
-            set_module("attacks")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    with col5:
-        if st.button("📝\nExplications / MFA"):
-            set_module("note")
-
-    st.stop()
+st.write("")  # petit espace sous la carte
 
 # ---------------------------------------------------------
-# BOUTON RETOUR
-# ---------------------------------------------------------
-if st.session_state.module != "home":
-    if st.button("⬅️ Retour à l'accueil"):
-        set_module("home")
-        st.stop()
-
-# ---------------------------------------------------------
-# DONNÉES VULN
+# DONNÉES VULN (COMMUNES) - Avec gestion d'erreurs
 # ---------------------------------------------------------
 CSV_FILE = "vulnerabilites.csv"
 
-if not os.path.exists(CSV_FILE):
-    df = pd.DataFrame(
-        columns=["Nom", "CVE", "Criticité", "Service", "Description", "Solution", "Date"]
-    )
-    df.to_csv(CSV_FILE, index=False)
+try:
+    if not os.path.exists(CSV_FILE):
+        df = pd.DataFrame(
+            columns=["Nom", "CVE", "Criticité", "Service", "Description", "Solution", "Date"]
+        )
+        df.to_csv(CSV_FILE, index=False)
 
-df = pd.read_csv(CSV_FILE)
+    df = pd.read_csv(CSV_FILE)
 
-if "Date" not in df.columns:
-    df["Date"] = datetime.now().date()
-else:
-    try:
-        df["Date"] = pd.to_datetime(df["Date"]).dt.date
-    except Exception:
+    if "Date" not in df.columns:
         df["Date"] = datetime.now().date()
+    else:
+        try:
+            df["Date"] = pd.to_datetime(df["Date"]).dt.date
+        except Exception:
+            df["Date"] = datetime.now().date()
 
-df.to_csv(CSV_FILE, index=False)
+    df.to_csv(CSV_FILE, index=False)
+except Exception as e:
+    st.error(f"Erreur lors du chargement du CSV : {e}")
+    df = pd.DataFrame(columns=["Nom", "CVE", "Criticité", "Service", "Description", "Solution", "Date"])
 
 # ---------------------------------------------------------
-# MODULE : VULNÉRABILITÉS
+# MODULE : VULNÉRABILITÉS - Correction de append
 # ---------------------------------------------------------
 if st.session_state.module == "vuln":
     st.markdown('<div class="section-title">🌍 Vulnérabilités</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Ajoute, visualise et analyse les vulnérabilités détectées.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-sub">Ajoutez, visualisez et analysez les vulnérabilités détectées.</div>',
+        unsafe_allow_html=True
+    )
 
     with st.form("form_vuln"):
         col1, col2 = st.columns(2)
@@ -183,7 +212,8 @@ if st.session_state.module == "vuln":
             "Solution": solution,
             "Date": datetime.now().date(),
         }
-        df = df._append(new_row, ignore_index=True)
+        # Correction : Utiliser pd.concat au lieu de append déprécié
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         df.to_csv(CSV_FILE, index=False)
         st.success("✅ Vulnérabilité ajoutée.")
 
@@ -195,13 +225,24 @@ if st.session_state.module == "vuln":
 
         with col_a:
             attacks_per_day = df.groupby("Date").size().reset_index(name="Nombre")
-            fig = px.line(attacks_per_day, x="Date", y="Nombre", markers=True, title="Évolution des vulnérabilités")
+            fig = px.line(
+                attacks_per_day,
+                x="Date",
+                y="Nombre",
+                markers=True,
+                title="Évolution des vulnérabilités recensées",
+            )
             st.plotly_chart(fig, use_container_width=True)
 
         with col_b:
             crit_counts = df["Criticité"].value_counts().reset_index()
             crit_counts.columns = ["Criticité", "Nombre"]
-            fig2 = px.pie(crit_counts, names="Criticité", values="Nombre", title="Répartition par criticité")
+            fig2 = px.pie(
+                crit_counts,
+                names="Criticité",
+                values="Nombre",
+                title="Répartition par criticité",
+            )
             st.plotly_chart(fig2, use_container_width=True)
 
 # ---------------------------------------------------------
@@ -209,7 +250,10 @@ if st.session_state.module == "vuln":
 # ---------------------------------------------------------
 if st.session_state.module == "pwd":
     st.markdown('<div class="section-title">🔒 Sécurité des mots de passe</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Teste la robustesse d'un mot de passe et sa présence dans rockyou.txt.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-sub">Testez la robustesse d’un mot de passe et sa présence dans rockyou.txt.</div>',
+        unsafe_allow_html=True
+    )
 
     pwd = st.text_input("Entrez un mot de passe à tester", type="password")
 
@@ -251,12 +295,15 @@ if st.session_state.module == "pwd":
 
     def check_rockyou(password):
         if not os.path.exists("rockyou.txt"):
-            return False, "⚠️ Fichier rockyou.txt introuvable."
-        with open("rockyou.txt", "r", encoding="latin-1", errors="ignore") as f:
-            for line in f:
-                if password == line.strip():
-                    return True, "❌ Mot de passe présent dans rockyou.txt."
-        return False, "✔ Mot de passe non présent dans rockyou.txt."
+            return False, "⚠️ Fichier rockyou.txt introuvable dans le dossier."
+        try:
+            with open("rockyou.txt", "r", encoding="latin-1", errors="ignore") as f:
+                for line in f:
+                    if password == line.strip():
+                        return True, "❌ Mot de passe présent dans rockyou.txt."
+            return False, "✔ Mot de passe non présent dans rockyou.txt."
+        except Exception as e:
+            return False, f"Erreur lors de la lecture de rockyou.txt : {e}"
 
     if pwd:
         score, criteria = password_strength(pwd)
@@ -273,14 +320,17 @@ if st.session_state.module == "pwd":
 # ---------------------------------------------------------
 if st.session_state.module == "fw":
     st.markdown('<div class="section-title">🛡️ Firewall</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Rôle du pare-feu dans la réduction de la surface d'attaque.</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-sub">Rôle du pare-feu dans la réduction de la surface d’attaque.</div>',
+        unsafe_allow_html=True
+    )
 
     st.markdown(
         """
-- Filtre le trafic entrant et sortant  
-- Réduit la surface d'attaque exposée  
-- Empêche scans de ports et exploits  
-- Complète mots de passe + MFA  
+- Filtre le trafic entrant et sortant pour bloquer les connexions malveillantes  
+- Réduit la surface d’attaque exposée à Internet  
+- Empêche certains scans de ports et tentatives d’exploitation  
+- Complète la sécurité des mots de passe et du MFA  
 """
     )
 
@@ -288,8 +338,11 @@ if st.session_state.module == "fw":
 # MODULE : ATTAQUES
 # ---------------------------------------------------------
 if st.session_state.module == "attacks":
-    st.markdown('<div class="section-title">🏠 Attaques</div>', unsafe_home_html=True)
-    st.markdown('<div class="section-sub">Vue synthétique des attaques détectées.</div>', unsafe_html=True)
+    st.markdown('<div class="section-title">🏠 Attaques</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-sub">Vue synthétique des attaques ou campagnes détectées.</div>',
+        unsafe_allow_html=True
+    )
 
     data = pd.DataFrame(
         {
@@ -305,7 +358,7 @@ if st.session_state.module == "attacks":
         st.dataframe(data, use_container_width=True)
 
     with col_g:
-        st.subheader("📊 Volume d'attaques")
+        st.subheader("📊 Volume d’attaques")
         fig = px.bar(data, x="Date", y="Attaques", title="Attaques par jour")
         st.plotly_chart(fig, use_container_width=True)
 
@@ -313,28 +366,33 @@ if st.session_state.module == "attacks":
 # MODULE : EXPLICATIONS / MFA
 # ---------------------------------------------------------
 if st.session_state.module == "note":
-    st.markdown('<div class="section-title">📝 Explications & MFA</div>', unsafe_html=True)
-    st.markdown('<div class="section-sub">Rappels sur les bonnes pratiques et l'intérêt du MFA.</div>', unsafe_html=True)
+    st.markdown('<div class="section-title">📝 Explications & MFA</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-sub">Rappels sur les bonnes pratiques de mots de passe et l’intérêt du MFA.</div>',
+        unsafe_allow_html=True
+    )
 
     st.markdown(
         """
 ### Risques des mots de passe faibles
 - Cassables en quelques secondes  
-- Très présents dans rockyou.txt  
-- Réutilisés sur plusieurs services  
+- Très présents dans des dictionnaires comme rockyou.txt  
+- Souvent réutilisés sur plusieurs services  
 - Vulnérables aux attaques automatisées  
 
 ### Pourquoi activer le MFA
-- Protège même si le mot de passe fuit  
-- Bloque une grande partie du phishing  
-- Ajoute une couche indépendante  
-- Indispensable pour les comptes sensibles  
+- Protège même si le mot de passe est compromis  
+- Bloque une grande partie des attaques par phishing  
+- Ajoute une couche indépendante du mot de passe  
+- Indispensable pour les comptes sensibles (mail, banque, accès pro, etc.)  
 
 ### Bonnes pratiques
-- Utiliser un gestionnaire  
-- Générer des mots de passe longs  
-- Activer le MFA partout  
-- Ne jamais réutiliser un mot de passe  
+- Utiliser un gestionnaire de mots de passe  
+- Générer des mots de passe longs (12+ caractères) et uniques  
+- Activer le MFA partout où c’est possible  
+- Ne jamais réutiliser le même mot de passe  
 """
     )
+    
+
 
