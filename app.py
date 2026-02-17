@@ -4,6 +4,7 @@ import plotly.express as px
 import os
 import re
 from datetime import datetime, date
+from PIL import Image
 
 # ---------------------------------------------------------
 # CONFIG GÉNÉRALE
@@ -12,6 +13,8 @@ st.set_page_config(
     page_title="CYBER SÉCURITÉ – Dashboard",
     layout="wide"
 )
+
+px.defaults.template = "plotly_dark"
 
 # ---------------------------------------------------------
 # CSS GLOBAL (fond, carte centrale, boutons)
@@ -89,10 +92,31 @@ st.markdown(
 )
 
 # ---------------------------------------------------------
+# IMAGE + CARDS + GRAPHIQUE
+# ---------------------------------------------------------
+image = Image.open("interface_cyber.jpg")
+st.image(image, use_column_width=True)
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Vulnérabilités critiques", 12)
+col2.metric("Vulnérabilités hautes", 27)
+col3.metric("Vulnérabilités moyennes", 41)
+
+st.markdown("---")
+
+df_stats = pd.DataFrame({
+    "Type": ["Critique", "Haute", "Moyenne"],
+    "Nombre": [12, 27, 41]
+})
+
+fig_stats = px.bar(df_stats, x="Type", y="Nombre", title="Répartition des vulnérabilités")
+st.plotly_chart(fig_stats, use_container_width=True)
+
+# ---------------------------------------------------------
 # STATE NAVIGATION
 # ---------------------------------------------------------
 if "module" not in st.session_state:
-    st.session_state.module = "vuln"  # par défaut
+    st.session_state.module = "vuln"
 
 def set_module(name: str):
     st.session_state.module = name
@@ -103,7 +127,6 @@ def set_module(name: str):
 with st.container():
     st.markdown('<div class="cyber-card">', unsafe_allow_html=True)
 
-    # Ligne logo + titre
     col_logo, col_text = st.columns([1, 2])
 
     with col_logo:
@@ -142,10 +165,10 @@ with st.container():
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-st.write("")  # petit espace sous la carte
+st.write("")
 
 # ---------------------------------------------------------
-# DONNÉES VULN (COMMUNES)
+# DONNÉES VULN
 # ---------------------------------------------------------
 CSV_FILE = "vulnerabilites.csv"
 
@@ -373,11 +396,9 @@ if st.session_state.module == "note":
 - Utiliser un gestionnaire de mots de passe  
 - Générer des mots de passe longs (12+ caractères) et uniques  
 - Activer le MFA partout où c’est possible  
-- Ne jamais réutiliser le même mot de passe  
+- Ne jamais réutiliser le même mot de passe 
 """
     )
-
-
 
 
 
