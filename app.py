@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import base64
 import os
 import re
 from datetime import datetime, date
@@ -17,49 +18,65 @@ st.set_page_config(
 px.defaults.template = "plotly_dark"
 
 # ---------------------------------------------------------
+# CHARGEMENT DE L'IMAGE DE FOND
+# ---------------------------------------------------------
+if os.path.exists("interface_cyber.jpg"):
+    with open("interface_cyber.jpg", "rb") as img_file:
+        img_base64 = base64.b64encode(img_file.read()).decode()
+    bg_image = f"data:image/jpeg;base64,{img_base64}"
+else:
+    bg_image = "rgba(10, 15, 30, 1)"
+
+# ---------------------------------------------------------
 # CSS GLOBAL + IMAGE DE FOND
 # ---------------------------------------------------------
 st.markdown(
-    """
+    f"""
     <style>
-    body {
-        background-image: url('interface_cyber.jpg');
+    .stApp {{
+        background-image: url('{bg_image}');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-    }
-    .main {
-        background: rgba(0,0,0,0.55);
+        background-repeat: no-repeat;
+    }}
+    
+    .main {{
+        background: rgba(0, 0, 0, 0.65);
         padding: 20px;
         border-radius: 15px;
-    }
-    .icon-btn {
+    }}
+    
+    .icon-btn {{
         text-align: center;
         padding: 20px;
         border-radius: 15px;
-        background: rgba(15,23,42,0.75);
-        border: 1px solid rgba(56,189,248,0.5);
+        background: rgba(15, 23, 42, 0.75);
+        border: 1px solid rgba(56, 189, 248, 0.5);
         color: #e5f4ff;
         font-size: 18px;
         font-weight: 600;
         cursor: pointer;
         transition: 0.2s;
-    }
-    .icon-btn:hover {
-        background: rgba(56,189,248,0.3);
+    }}
+    
+    .icon-btn:hover {{
+        background: rgba(56, 189, 248, 0.3);
         transform: scale(1.05);
-    }
-    .section-title {
+    }}
+    
+    .section-title {{
         color: #e5f4ff;
         font-size: 26px;
         font-weight: 800;
         margin-top: 10px;
-    }
-    .section-sub {
+    }}
+    
+    .section-sub {{
         color: #cbd5e1;
         font-size: 15px;
         margin-bottom: 10px;
-    }
+    }}
     </style>
     """,
     unsafe_allow_html=True
@@ -75,7 +92,7 @@ def set_module(name: str):
     st.session_state.module = name
 
 # ---------------------------------------------------------
-# PAGE D’ACCUEIL AVEC ICÔNES INTERACTIVES
+# PAGE D'ACCUEIL AVEC ICÔNES INTERACTIVES
 # ---------------------------------------------------------
 if st.session_state.module == "home":
 
@@ -192,7 +209,7 @@ if st.session_state.module == "vuln":
 # ---------------------------------------------------------
 if st.session_state.module == "pwd":
     st.markdown('<div class="section-title">🔒 Sécurité des mots de passe</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Teste la robustesse d’un mot de passe et sa présence dans rockyou.txt.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Teste la robustesse d'un mot de passe et sa présence dans rockyou.txt.</div>', unsafe_allow_html=True)
 
     pwd = st.text_input("Entrez un mot de passe à tester", type="password")
 
@@ -256,12 +273,12 @@ if st.session_state.module == "pwd":
 # ---------------------------------------------------------
 if st.session_state.module == "fw":
     st.markdown('<div class="section-title">🛡️ Firewall</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Rôle du pare-feu dans la réduction de la surface d’attaque.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-sub">Rôle du pare-feu dans la réduction de la surface d'attaque.</div>', unsafe_allow_html=True)
 
     st.markdown(
         """
 - Filtre le trafic entrant et sortant  
-- Réduit la surface d’attaque exposée  
+- Réduit la surface d'attaque exposée  
 - Empêche scans de ports et exploits  
 - Complète mots de passe + MFA  
 """
@@ -271,8 +288,8 @@ if st.session_state.module == "fw":
 # MODULE : ATTAQUES
 # ---------------------------------------------------------
 if st.session_state.module == "attacks":
-    st.markdown('<div class="section-title">🏠 Attaques</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Vue synthétique des attaques détectées.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">🏠 Attaques</div>', unsafe_home_html=True)
+    st.markdown('<div class="section-sub">Vue synthétique des attaques détectées.</div>', unsafe_html=True)
 
     data = pd.DataFrame(
         {
@@ -288,7 +305,7 @@ if st.session_state.module == "attacks":
         st.dataframe(data, use_container_width=True)
 
     with col_g:
-        st.subheader("📊 Volume d’attaques")
+        st.subheader("📊 Volume d'attaques")
         fig = px.bar(data, x="Date", y="Attaques", title="Attaques par jour")
         st.plotly_chart(fig, use_container_width=True)
 
@@ -296,8 +313,8 @@ if st.session_state.module == "attacks":
 # MODULE : EXPLICATIONS / MFA
 # ---------------------------------------------------------
 if st.session_state.module == "note":
-    st.markdown('<div class="section-title">📝 Explications & MFA</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-sub">Rappels sur les bonnes pratiques et l’intérêt du MFA.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">📝 Explications & MFA</div>', unsafe_html=True)
+    st.markdown('<div class="section-sub">Rappels sur les bonnes pratiques et l'intérêt du MFA.</div>', unsafe_html=True)
 
     st.markdown(
         """
@@ -320,7 +337,4 @@ if st.session_state.module == "note":
 - Ne jamais réutiliser un mot de passe  
 """
     )
-
-
-     
 
