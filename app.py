@@ -211,6 +211,79 @@ if st.session_state.module == "vuln":
     st.subheader("📋 Tableau des vulnérabilités")
     st.dataframe(df, use_container_width=True)
 
+    # suppression d'une ligne
+    if not df.empty:
+        st.markdown("### ❌ Supprimer une vulnérabilité")
+        # propose une liste lisible avec index
+        options = [f"{idx} - {row['Nom']} ({row.get('CVE','')})" for idx, row in df.iterrows()]
+        choice = st.selectbox("Sélectionner la ligne à supprimer", options)
+        if st.button("Supprimer la ligne sélectionnée"):
+            try:
+                idx_to_remove = int(choice.split(" - ")[0])
+                df = df.drop(idx_to_remove).reset_index(drop=True)
+                df.to_csv(CSV_FILE, index=False)
+                st.success("✅ Ligne supprimée.")
+                st.experimental_rerun()
+            except Exception as e:
+                st.error(f"Erreur lors de la suppression : {e}")
+
+        # génération de rapport
+        st.markdown("### 📄 Générer un rapport technique")
+        def make_txt_report(frame: pd.DataFrame) -> str:
+            parts = ["Rapport de vulnérabilités\n", "Generated: " + str(datetime.now()) + "\n\n"]
+            for i, r in frame.iterrows():
+                parts.append(f"[{i}] Nom: {r['Nom']}\n")
+                parts.append(f"    CVE: {r.get('CVE','')}\n")
+                parts.append(f"    Criticité: {r.get('Criticité','')}\n")
+                parts.append(f"    Service: {r.get('Service','')}\n")
+                parts.append(f"    Description: {r.get('Description','')}\n")
+                parts.append(f"    Solution: {r.get('Solution','')}\n")
+                parts.append(f"    Date: {r.get('Date','')}\n\n")
+            return "".join(parts)
+
+        def make_pdf_report(frame: pd.DataFrame) -> bytes:
+            try:
+                from fpdf import FPDF
+            except ImportError:
+                st.error('Bibliothèque fpdf manquante ; ajoutez-la à requirements.txt et réinstallez.')
+                return b""
+            pdf = FPDF()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.add_page()
+            pdf.set_font("Arial", "B", 14)
+            pdf.cell(0, 10, "Rapport de vulnérabilités", ln=True, align="C")
+            pdf.ln(4)
+            pdf.set_font("Arial", size=10)
+            pdf.cell(0, 6, f"Generated: {datetime.now()}", ln=True)
+            pdf.ln(4)
+            for i, r in frame.iterrows():
+                pdf.set_font("Arial", "B", 11)
+                pdf.cell(0, 6, f"[{i}] {r['Nom']}", ln=True)
+                pdf.set_font("Arial", size=10)
+                pdf.multi_cell(0, 5, f"CVE: {r.get('CVE','')} | Criticité: {r.get('Criticité','')}")
+                pdf.multi_cell(0, 5, f"Service: {r.get('Service','')} | Date: {r.get('Date','')}")
+                pdf.multi_cell(0, 5, f"Description: {r.get('Description','')}")
+                pdf.multi_cell(0, 5, f"Solution: {r.get('Solution','')}")
+                pdf.ln(2)
+            return pdf.output(dest='S').encode('latin-1')
+
+        txt_report = make_txt_report(df)
+        pdf_report = make_pdf_report(df)
+
+        st.download_button(
+            label="Télécharger le rapport (TXT)",
+            data=txt_report,
+            file_name="rapport_vulnerabilites.txt",
+            mime="text/plain",
+        )
+        if pdf_report:
+            st.download_button(
+                label="Télécharger le rapport (PDF)",
+                data=pdf_report,
+                file_name="rapport_vulnerabilites.pdf",
+                mime="application/pdf",
+            )
+
     if not df.empty:
         col_a, col_b = st.columns(2)
 
@@ -390,4 +463,5 @@ if st.session_state.module == "note":
     """,
         unsafe_allow_html=True
     )
+
 
